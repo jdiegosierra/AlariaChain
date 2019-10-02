@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 # time = "0.1"
+sha2 = "0.8.0"
