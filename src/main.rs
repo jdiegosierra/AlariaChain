@@ -6,8 +6,9 @@ use sha2::{
     Digest, Sha256,
 };
 
-#[derive(Debug)]
-#[derive(Clone)]
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Clone)]
 // Creamos estructura publica de bloque, para que pueda ser accesible desde los padres.
 pub struct Block {
     pub index: u32,
@@ -17,9 +18,20 @@ pub struct Block {
     pub hash: GenericArray<u8, U32>
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct Test {
+    pub index: u32,
+    pub timestamp: u128,
+    pub data: String, // TODO: Aumentar número de transacciones. Usar bytes.
+    pub prev: [String; 1]
+}
+
+
 pub struct Blockchain {
     pub blocks: Vec<Block>
 }
+
+// static targetBits: u16 = 24;
 
 impl Block {
     fn new(index: u32, timestamp: u128, data: String, prev: [String; 1]) -> Self {
@@ -63,17 +75,34 @@ impl Blockchain {
     }
 }
 
+// pub fn Serialize {
+
+// }
+
 fn main() {
     
     println!("Welcome to AlariaChain!");
+    let world = Test {
+        index: 1,
+        timestamp: lib::get_timestamp(),
+        data: String::from("This is the genesis block"), // TODO: Aumentar número de transacciones. Usar bytes.
+        prev: [String::from("00000000")]
+    };
 
-    println!("Creating genesis Block...");
-    let genesisblock = Block::new(1, lib::get_timestamp(), String::from("This is the genesis block"), [String::from("00000000")]);
+    let encoded = bincode::serialize(&world).unwrap();
 
-    // println!("El primer bloque es: ");
-    // println!("{:#?}", genesisblock);
+    println!("the bytecode is {:#?}", encoded);
 
-    let mut blockchain = Blockchain::new();
-    println!("Adding genesis Block...");
-    blockchain.add_block(genesisblock);
+    let decoded = bincode::deserialize(&encoded[..]).unwrap();
+
+    assert_eq!(world, decoded, "we are testing addition with {:#?} and {:#?}", world, decoded);
+    // println!("Creating genesis Block...");
+    // let genesisblock = Block::new(1, lib::get_timestamp(), String::from("This is the genesis block"), [String::from("00000000")]);
+
+    // // println!("El primer bloque es: ");
+    // // println!("{:#?}", genesisblock);
+
+    // let mut blockchain = Blockchain::new();
+    // println!("Adding genesis Block...");
+    // blockchain.add_block(genesisblock);
 }
