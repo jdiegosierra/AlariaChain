@@ -11,7 +11,11 @@ use serde::{Deserialize, Serialize};
 use leveldb::database::Database;
 use leveldb::kv::KV;
 use leveldb::options::{Options, ReadOptions, WriteOptions};
+use leveldb::iterator::{Iterator, KeyIterator, ValueIterator};
+use leveldb::database::iterator::Iterable;
 use std::path::Path;
+
+use leveldb::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 // Creamos estructura publica de bloque, para que pueda ser accesible desde los padres.
@@ -72,6 +76,10 @@ impl Blockchain {
 
 // }
 
+// pub fn BlockchainIterator(index: u8) {
+
+// }
+
 fn main() {
     println!("Welcome to AlariaChain!");
 
@@ -126,6 +134,14 @@ fn main() {
         }
         Err(e) => panic!("failed reading data: {:?}", e),
     }
+    println!("LETS ITERATE");
+
+    for (key, value) in database.iter(ReadOptions::new()) {
+        println!("Key: {}", key);
+        println!("value: {:?}", value);
+    }
+
+
     println!("FIN!")
     // let decoded = bincode::deserialize(&encoded[..]).unwrap();
     // println!("the bytecode is {:#?}", encoded);
