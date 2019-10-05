@@ -11,3 +11,4 @@ edition = "2018"
 sha2 = "0.8.0"
 serde = { version = "1.0.101", features = ["derive"] }
 bincode = "1.2.0"
+leveldb = "0.8.4"

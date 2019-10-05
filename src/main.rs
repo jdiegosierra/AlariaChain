@@ -6,36 +6,31 @@ use sha2::{
     Digest, Sha256,
 };
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
+use leveldb::database::Database;
+use leveldb::kv::KV;
+use leveldb::options::{Options, ReadOptions, WriteOptions};
+use std::path::Path;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 // Creamos estructura publica de bloque, para que pueda ser accesible desde los padres.
 pub struct Block {
     pub index: u32,
     pub timestamp: u128,
     pub data: String, // TODO: Aumentar número de transacciones. Usar bytes.
     pub prev: [String; 1],
-    pub hash: GenericArray<u8, U32>
+    pub hash: Vec<u8>,
 }
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct Test {
-    pub index: u32,
-    pub timestamp: u128,
-    pub data: String, // TODO: Aumentar número de transacciones. Usar bytes.
-    pub prev: [String; 1]
-}
-
 
 pub struct Blockchain {
-    pub blocks: Vec<Block>
+    pub blocks: Vec<Block>,
 }
 
 // static targetBits: u16 = 24;
 
 impl Block {
     fn new(index: u32, timestamp: u128, data: String, prev: [String; 1]) -> Self {
-
         let tmp = &data; // se puede hacer sin esto?
 
         Block {
@@ -43,7 +38,7 @@ impl Block {
             timestamp,
             data: tmp.clone(),
             prev,
-            hash: get_hash(tmp)
+            hash: get_hash(tmp).to_vec(),
         }
     }
 
@@ -65,9 +60,7 @@ pub fn get_hash(data: &String) -> GenericArray<u8, U32> {
 
 impl Blockchain {
     fn new() -> Self {
-        Blockchain {
-            blocks: vec![]
-        }
+        Blockchain { blocks: vec![] }
     }
 
     fn add_block(&mut self, block: Block) {
@@ -80,29 +73,61 @@ impl Blockchain {
 // }
 
 fn main() {
-    
     println!("Welcome to AlariaChain!");
-    let world = Test {
-        index: 1,
-        timestamp: lib::get_timestamp(),
-        data: String::from("This is the genesis block"), // TODO: Aumentar número de transacciones. Usar bytes.
-        prev: [String::from("00000000")]
+
+    println!("Creating genesis Block...");
+    let genesis_block = Block::new(
+        1,
+        lib::get_timestamp(),
+        String::from("This is the genesis block"),
+        [String::from("00000000")],
+    );
+
+    println!("El primer bloque es: ");
+    println!("{:#?}", genesis_block);
+
+    let mut blockchain = Blockchain::new();
+    println!("Adding genesis Block...");
+    let encoded = bincode::serialize(&genesis_block).unwrap();
+
+    let mut options = Options::new();
+    options.create_if_missing = true;
+
+    let path = Path::new("./db/blockchain");
+
+    let mut database = match Database::open(&path, options) {
+        Ok(db) => db,
+        Err(e) => panic!("failed to open database: {:?}", e),
     };
 
-    let encoded = bincode::serialize(&world).unwrap();
+    // let write_opts = WriteOptions::new();
+    // match database.put(write_opts, 1, &encoded) {
+    //     Ok(_) => (),
+    //     Err(e) => panic!("failed to write to database: {:?}", e),
+    // };
 
-    println!("the bytecode is {:#?}", encoded);
-
-    let decoded = bincode::deserialize(&encoded[..]).unwrap();
-
-    assert_eq!(world, decoded, "we are testing addition with {:#?} and {:#?}", world, decoded);
-    // println!("Creating genesis Block...");
-    // let genesisblock = Block::new(1, lib::get_timestamp(), String::from("This is the genesis block"), [String::from("00000000")]);
-
-    // // println!("El primer bloque es: ");
-    // // println!("{:#?}", genesisblock);
-
-    // let mut blockchain = Blockchain::new();
-    // println!("Adding genesis Block...");
+    let read_opts = ReadOptions::new();
+    let res = database.get(read_opts, 1);
+    match res {
+        Ok(data) => {
+            // assert!(data.is_some());
+            // assert_eq!(data, Some(vec![1]));
+            // println!("Los datos son");
+            // println!("{:#?}", data);
+            // let decoded = bincode::deserialize(&data[..]).unwrap();
+            println!("the bytecode is");
+            match data {
+                Some(inner) => {
+                    let decoded: Block = bincode::deserialize(&inner).unwrap();
+                    println!("{:?}", decoded);
+                },
+                None => println!("No gift? Oh well."),
+            }
+        }
+        Err(e) => panic!("failed reading data: {:?}", e),
+    }
+    println!("FIN!")
+    // let decoded = bincode::deserialize(&encoded[..]).unwrap();
+    // println!("the bytecode is {:#?}", encoded);
     // blockchain.add_block(genesisblock);
 }
