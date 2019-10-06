@@ -1,5 +1,5 @@
 [package]
-name = "alaria_chain"
+name = "alariachain"
 version = "0.1.0"
 authors = ["Diego Sierra fernandez"]
 edition = "2018"
@@ -12,3 +12,6 @@ sha2 = "0.8.0"
 serde = { version = "1.0.101", features = ["derive"] }
 bincode = "1.2.0"
 leveldb = "0.8.4"
+
+[dependencies.clap]
+git = "https://github.com/clap-rs/clap.git"

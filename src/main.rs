@@ -1,149 +1,53 @@
 // modules
-mod lib;
-
-use sha2::{
-    digest::generic_array::{typenum::U32, GenericArray},
-    Digest, Sha256,
-};
-
-use serde::{Deserialize, Serialize};
-
-use leveldb::database::Database;
-use leveldb::kv::KV;
-use leveldb::options::{Options, ReadOptions, WriteOptions};
-use leveldb::iterator::{Iterator, KeyIterator, ValueIterator};
-use leveldb::database::iterator::Iterable;
-use std::path::Path;
-
-use leveldb::*;
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-// Creamos estructura publica de bloque, para que pueda ser accesible desde los padres.
-pub struct Block {
-    pub index: u32,
-    pub timestamp: u128,
-    pub data: String, // TODO: Aumentar número de transacciones. Usar bytes.
-    pub prev: [String; 1],
-    pub hash: Vec<u8>,
-}
-
-pub struct Blockchain {
-    pub blocks: Vec<Block>,
-}
-
-// static targetBits: u16 = 24;
-
-impl Block {
-    fn new(index: u32, timestamp: u128, data: String, prev: [String; 1]) -> Self {
-        let tmp = &data; // se puede hacer sin esto?
-
-        Block {
-            index,
-            timestamp,
-            data: tmp.clone(),
-            prev,
-            hash: get_hash(tmp).to_vec(),
-        }
-    }
-
-    // fn get_hash(mut data: [String; 1]) -> GenericArray<u8, U32> {
-    //     let mut hasher = Sha256::new();
-    //     hasher.input(&mut data[0]);
-    //     let result = hasher.result();
-    //     result
-    // }
-}
-
-// Función que obtiene el hash de un bloque
-pub fn get_hash(data: &String) -> GenericArray<u8, U32> {
-    let mut hasher = Sha256::new();
-    hasher.input(&data);
-    let result = hasher.result();
-    result
-}
-
-impl Blockchain {
-    fn new() -> Self {
-        Blockchain { blocks: vec![] }
-    }
-
-    fn add_block(&mut self, block: Block) {
-        self.blocks.push(block.clone());
-    }
-}
-
-// pub fn Serialize {
-
-// }
-
-// pub fn BlockchainIterator(index: u8) {
-
-// }
+// mod lib/blockchain;
+extern crate clap;
+use clap::App;
 
 fn main() {
-    println!("Welcome to AlariaChain!");
 
-    println!("Creating genesis Block...");
-    let genesis_block = Block::new(
-        1,
-        lib::get_timestamp(),
-        String::from("This is the genesis block"),
-        [String::from("00000000")],
-    );
+    let matches = App::new("Alaria Chain")
+        .version("0.0.1")
+        .author("J. Diego Sierra Fernández <jdiego.sierra@hotmail.com>")
+        .about("The Blockchain")
+        .arg("-c, --config=[FILE] 'Sets a custom config file'")
+        .arg("<output> 'Sets an optional output file'")
+        .arg("-d... 'Turn debugging information on'")
+        .subcommand(
+            App::new("test")
+                .about("does testing things")
+                .arg("-l, --list 'lists test values'"),
+        )
+        .get_matches();
 
-    println!("El primer bloque es: ");
-    println!("{:#?}", genesis_block);
+    // You can check the value provided by positional arguments, or option arguments
+    if let Some(o) = matches.value_of("output") {
+        println!("Value for output: {}", o);
+    }
 
-    let mut blockchain = Blockchain::new();
-    println!("Adding genesis Block...");
-    let encoded = bincode::serialize(&genesis_block).unwrap();
+    if let Some(c) = matches.value_of("config") {
+        println!("Value for config: {}", c);
+    }
 
-    let mut options = Options::new();
-    options.create_if_missing = true;
+    // You can see how many times a particular flag or argument occurred
+    // Note, only flags can have multiple occurrences
+    match matches.occurrences_of("d") {
+        0 => println!("Debug mode is off"),
+        1 => println!("Debug mode is kind of on"),
+        2 => println!("Debug mode is on"),
+        3 | _ => println!("Don't be crazy"),
+    }
 
-    let path = Path::new("./db/blockchain");
-
-    let mut database = match Database::open(&path, options) {
-        Ok(db) => db,
-        Err(e) => panic!("failed to open database: {:?}", e),
-    };
-
-    // let write_opts = WriteOptions::new();
-    // match database.put(write_opts, 1, &encoded) {
-    //     Ok(_) => (),
-    //     Err(e) => panic!("failed to write to database: {:?}", e),
-    // };
-
-    let read_opts = ReadOptions::new();
-    let res = database.get(read_opts, 1);
-    match res {
-        Ok(data) => {
-            // assert!(data.is_some());
-            // assert_eq!(data, Some(vec![1]));
-            // println!("Los datos son");
-            // println!("{:#?}", data);
-            // let decoded = bincode::deserialize(&data[..]).unwrap();
-            println!("the bytecode is");
-            match data {
-                Some(inner) => {
-                    let decoded: Block = bincode::deserialize(&inner).unwrap();
-                    println!("{:?}", decoded);
-                },
-                None => println!("No gift? Oh well."),
-            }
+    // You can check for the existence of subcommands, and if found use their
+    // matches just as you would the top level app
+    if let Some(ref matches) = matches.subcommand_matches("test") {
+        // "$ myapp test" was run
+        if matches.is_present("list") {
+            // "$ myapp test -l" was run
+            println!("Printing testing lists...");
+        } else {
+            println!("Not printing testing lists...");
         }
-        Err(e) => panic!("failed reading data: {:?}", e),
-    }
-    println!("LETS ITERATE");
-
-    for (key, value) in database.iter(ReadOptions::new()) {
-        println!("Key: {}", key);
-        println!("value: {:?}", value);
     }
 
-
-    println!("FIN!")
-    // let decoded = bincode::deserialize(&encoded[..]).unwrap();
-    // println!("the bytecode is {:#?}", encoded);
-    // blockchain.add_block(genesisblock);
+    println!("FIN!");
 }
