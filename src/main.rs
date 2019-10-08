@@ -30,8 +30,12 @@ fn main() {
             App::new("printgenesis")
                 .about("Print genesis file")
         )
+        .subcommand(
+            App::new("dropchain")
+                .about("Remove the blockchain")
+        )
         .get_matches();
-        
+
     if let Some(_matches) = matches.subcommand_matches("init") {
         lib::blockchain::Blockchain::new(String::from("./config/genesis.json"), String::from("./config/genesis.json"));
     }
@@ -43,7 +47,10 @@ fn main() {
     if let Some(_matches) = matches.subcommand_matches("printchain") {
         lib::blockchain::Blockchain::print_chain();
     }
-        if let Some(_matches) = matches.subcommand_matches("printgenesis") {
-        lib::blockchain::Blockchain::print_genesis(String::from("/home/diego/Proyectos/github/AlariaChain/config/genesis.json"));
+    if let Some(_matches) = matches.subcommand_matches("printgenesis") {
+        lib::blockchain::Blockchain::print_genesis(String::from("./config/genesis.json"));
+    }
+    if let Some(_matches) = matches.subcommand_matches("dropchain") {
+        lib::blockchain::Blockchain::drop_chain();
     }
 }

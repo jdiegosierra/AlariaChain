@@ -2,6 +2,7 @@
 mod db;
 mod utils;
 use serde::{Deserialize, Serialize};
+use std::fs;
 // use serde_json::{Result, Value};
 // use serde_json::json;
 
@@ -92,5 +93,9 @@ impl Blockchain {
 
     pub fn print_chain() {
         db::iterate();
+    }
+
+    pub fn drop_chain() {
+        fs::remove_dir_all("./db").unwrap();
     }
 }
