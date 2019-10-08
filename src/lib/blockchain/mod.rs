@@ -1,6 +1,7 @@
 // DEPENDENCIES
 mod db;
 mod utils;
+mod transactions;
 use serde::{Deserialize, Serialize};
 use std::fs;
 // use serde_json::{Result, Value};
@@ -16,6 +17,15 @@ struct Block {
     pub index: u32,
     pub timestamp: u128,
     pub data: String, // TODO: Aumentar número de transacciones. Usar bytes.
+    pub prev: Vec<u8>,
+    pub hash: Vec<u8>
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct BlockTx {
+    pub index: u32,
+    pub timestamp: u128,
+    pub data: Vec<transactions::Transaction>, // TODO: Aumentar número de transacciones. Usar bytes.
     pub prev: Vec<u8>,
     pub hash: Vec<u8>
 }
