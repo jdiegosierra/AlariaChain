@@ -1,28 +1,48 @@
+// DEPENDENCIES
 mod db;
-
-// Dependencies
-use std::time::{SystemTime, UNIX_EPOCH};
-use sha2::{
-    digest::generic_array::{typenum::U32, GenericArray},
-    Digest, Sha256 // Digest permite que se pueda hacer el new() por que?
-};
+mod utils;
 use serde::{Deserialize, Serialize};
+// use serde_json::{Result, Value};
+// use serde_json::json;
 
+
+// STRUCTS
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Blockchain {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-// Creamos estructura publica de bloque, para que pueda ser accesible desde los padres.
-pub struct Block {
+struct Block {
     pub index: u32,
     pub timestamp: u128,
     pub data: String, // TODO: Aumentar número de transacciones. Usar bytes.
     pub prev: Vec<u8>,
-    pub hash: Vec<u8>,
+    pub hash: Vec<u8>
 }
 
-pub struct Blockchain {
-    pub blocks: Vec<Block>,
+// GENESIS STRUCT
+#[derive(Serialize, Deserialize, Debug)]
+struct Genesis {
+    genesis_time: String,
+    chain_id: String,
+    validators: Vec<Validator>,
+    app_hash: String
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct Validator {
+    pub address: String,
+    pub pub_key: Key,
+    pub power: String, 
+    pub name: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct Key {
+    pub r#type: String,
+    pub value: String
+}
+
+// OBJECTS
 impl Block {
     fn new(index: u32, timestamp: u128, data: String, prev: Vec<u8>) -> Self {
         let tmp = &data; // se puede hacer sin esto?
@@ -32,89 +52,45 @@ impl Block {
             timestamp,
             data: tmp.clone(),
             prev,
-            hash: get_hash(tmp).to_vec(),
+            hash: utils::get_hash(tmp).to_vec(),
         }
     }
 }
 
-// impl Blockchain {
-//     fn new() -> Self {
-//         let genesis_block = Block::new(
-//             1,
-//             lib::get_timestamp(),
-//             String::from("This is the genesis block"),
-//             [String::from("00000000")],
-//         );
+impl Blockchain {
+    pub fn new(genesis_file: String, _config_file: String) -> Self {
+        let file_content: String = utils::read_file(&genesis_file);
+        Blockchain::add_block(&file_content);
+        Blockchain{}
+    }
 
-//         Blockchain { blocks: vec![] }
-//     }
+    pub fn add_block(data: &String) {
+        let index = db::get_last_key();
+        let value = db::get_last_value();
+        let decoded: Block = bincode::deserialize(&value).unwrap();
+        println!("El anterior Bloque es {:#?}", decoded);
 
-//     fn addblock(&mut self, block: Block) {
-//         self.blocks.push(block.clone());
-//     }
-// }
+        let block = Block::new(
+            index+1,
+            utils::get_timestamp(),
+            data.clone(),
+            decoded.hash
+        );
 
-// let encoded = bincode::serialize(&genesis_block).unwrap();
+        println!("El nuevo Bloque es {:?}", block);
 
-pub fn get_timestamp() -> u128 {
-    let tmp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap(); // Leer Error Handling
+        let encoded = bincode::serialize(&block).unwrap(); // No se puede hacer en una sola línea let encoded: &[u8] = bincode::serialize(&block).unwrap();
+        let c: &[u8] = &encoded;
+        db::store_data(index+1, c);
+    }
 
-    tmp.as_secs() as u128
-}
+    pub fn print_genesis(genesis_file: String) {
+        let file_content: String = utils::read_file(&genesis_file);
+        let my_obj: Genesis = serde_json::from_str(&file_content).unwrap();
+        println!("{:#?}", my_obj);
+    }
 
-// // pub fn show_hash ()  {
-// //     // create a Sha256 object
-// //     let mut hasher = Sha256::new();
-// //     hasher.input(b"hholilil");
-// //     let result = hasher.result();
-// //     println!("{:x}", result) // con {} daba fallo, por qué?
-// //     // result.to_vec()
-
-// // }
-
-// // pub fn Serialize {
-
-// // }
-
-// // pub fn BlockchainIterator(index: u8) {
-
-// // }
-
-//     // let decoded = bincode::deserialize(&encoded[..]).unwrap();
-//     // println!("the bytecode is {:#?}", encoded);
-//     // blockchain.add_block(genesisblock);
-
-//     // Función que obtiene el hash de un bloque
-// pub fn get_hash(data: &String) -> GenericArray<u8, U32> {
-//     let mut hasher = Sha256::new();
-//     hasher.input(&data);
-//     let result = hasher.result();
-//     result
-// }
-
-
-
-pub fn get_hash(data: &String) -> GenericArray<u8, U32> {
-    let mut hasher = Sha256::new();
-    hasher.input(data);
-    let result = hasher.result();
-    result
-}
-
-pub fn addblock(data: &String) {
-    
-    let index = db::getLastKey();
-    let value = db::getLastValue();
-
-    Block::new(
-        index,
-        get_timestamp(),
-        data.clone(),
-        value
-    );
-}
-pub fn printchain() {
-    db::iterate();
+    pub fn print_chain() {
+        db::iterate();
+    }
 }
