@@ -7,7 +7,6 @@ use std::io::Read;
 use std::io::BufReader;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-
 pub fn get_hash(data: &String) -> GenericArray<u8, U32> {
     let mut hasher = Sha256::new();
     hasher.input(data);
@@ -35,3 +34,9 @@ pub fn get_timestamp() -> u128 {
 
     tmp.as_secs() as u128
 }
+
+// pub fn generate_keypair() {
+//     let mut csprng: OsRng = OsRng::new().unwrap();
+//     let keypair: Keypair = Keypair::generate(&mut csprng);
+//     println!("Keypair: {}", keypair);
+// }

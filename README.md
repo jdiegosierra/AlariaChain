@@ -6,7 +6,13 @@ cargo build
 2º Show the help
 ./target/debug/alariachain -h
 
-3º Init the Blockchain
+3º Add a transaction to the buffer
+./target/debug/alariachain addtransaction --to diego --data hola
+
+4º Print transactions un buffer
+./target/debug/alariachain printtransactions
+
+<!-- 3º Init the Blockchain
 ./target/debug/alariachain init
 
 4º Print the genesis file
@@ -19,4 +25,10 @@ cargo build
 ./target/debug/alariachain printchain
 
 7º Remove the Blockchain
-./target/debug/alariachain dropchain
+./target/debug/alariachain dropchain -->
+
+
+
+NEXT STEPS:
+
+- Implement Merklle tree in order to have a addtransaction and mineblock commands
