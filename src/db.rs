@@ -5,6 +5,8 @@ use leveldb::database::iterator::Iterable;
 use std::path::Path;
 use serde::{Deserialize, Serialize};
 
+use super::transaction;
+
 // let mut options = Options::new();
 // options.create_if_missing = true;
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -63,7 +65,7 @@ pub fn iterate_transactions(path: String) -> Vec<transaction::Transaction> {
     let mut result = Vec::new();
     let mut options = Options::new();
     options.create_if_missing = true;
-    let path = Path::new(path);
+    let path = Path::new(&path);
     let database = match Database::open(&path, options) {
         Ok(db) => db,
         Err(e) => panic!("failed to open database: {:?}", e),
@@ -74,7 +76,7 @@ pub fn iterate_transactions(path: String) -> Vec<transaction::Transaction> {
 
     for (_key, value) in database.iter(ReadOptions::new()) {
         // println!("Key: {}", key);
-        let decoded: Block = bincode::deserialize(&value).unwrap();
+        let decoded: transaction::Transaction = bincode::deserialize(&value).unwrap();
         // let c: &[u8] = &value;
         // let decoded: Block = bincode::deserialize(c).unwrap(); 
         // match value {
@@ -98,8 +100,8 @@ pub fn get_last_key(path: String) -> Option<u32> {
         Ok(db) => db,
         Err(e) => panic!("failed to open database: {:?}", e),
     };
-    // let read_opts = ReadOptions::new();
-    // let _res = database.get(read_opts, 1);
+    let read_opts = ReadOptions::new();
+    let _res = database.get(read_opts, 1);
     let result = match database.iter(ReadOptions::new()).next() {
         Some(data) => Some(data.0 as u32),
         None => None

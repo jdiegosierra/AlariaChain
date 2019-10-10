@@ -1,5 +1,9 @@
 // modules
-mod lib;
+mod transaction;
+mod blockchain;
+mod db;
+mod utils;
+
 extern crate clap;
 use clap::{App, Arg};
 
@@ -73,22 +77,22 @@ fn main() {
         // }
     }
     if let Some(_matches) = matches.subcommand_matches("printchain") {
-        lib::blockchain::Blockchain::print_chain();
+        blockchain::Blockchain::print_chain();
     }
     if let Some(_matches) = matches.subcommand_matches("printgenesis") {
-        lib::blockchain::Blockchain::print_genesis(String::from("./config/genesis.json"));
+        blockchain::Blockchain::print_genesis(String::from("./config/genesis.json"));
     }
     if let Some(_matches) = matches.subcommand_matches("dropchain") {
-        lib::blockchain::Blockchain::drop_chain();
+        blockchain::Blockchain::drop_chain();
     }
     // if let Some(_matches) = matches.subcommand_matches("keypair") {
     //     lib::blockchain::Blockchain::utils::generate_keypair();
     // }
     if let Some(input) = matches.subcommand_matches("addtransaction") {
-        lib::blockchain::Blockchain::add_transaction(String::from(input.value_of("to").unwrap()), String::from(input.value_of("data").unwrap_or("")));
+        blockchain::Blockchain::add_transaction(String::from(input.value_of("to").unwrap()), String::from(input.value_of("data").unwrap_or("")));
     }
     if let Some(input) = matches.subcommand_matches("printtransactions") {
-        lib::blockchain::Blockchain::print_transactions();
+        blockchain::Blockchain::print_transactions();
     }
     if let Some(_matches) = matches.subcommand_matches("mineblock") {
     }

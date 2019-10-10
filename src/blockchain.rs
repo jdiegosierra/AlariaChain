@@ -1,10 +1,12 @@
+
 // DEPENDENCIES
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize}; 
 use std::fs;
 // use serde_json::{Result, Value};
 // use serde_json::json;
-
-mod transaction;
+use super::transaction;
+use super::utils;
+use super::db;
 
 // STRUCTS
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -90,7 +92,7 @@ impl Blockchain {
     }
 
     pub fn print_chain() {
-        let blocks = db::iterate();
+        let blocks = db::iterate(String::from("./db/transactions"));
          println!("value: {:?}", blocks);
     }
 
@@ -109,7 +111,7 @@ impl Blockchain {
             Some(index) => index as u32
         };
         // let index = 0;
-        let transaction = transactions::Transaction::new(to, data);
+        let transaction = transaction::Transaction::new(to, data);
         let encoded = bincode::serialize(&transaction).unwrap(); // No se puede hacer en una sola línea let encoded: &[u8] = bincode::serialize(&block).unwrap();
         let c: &[u8] = &encoded;
         db::store_data(path, index+1, c);
@@ -117,6 +119,6 @@ impl Blockchain {
 
     pub fn print_transactions() {
         let transactions = db::iterate_transactions(String::from("./db/transactions"));
-        println!("value: {:?}", blocks);        
+        println!("value: {:?}", transactions);        
     }
 }
