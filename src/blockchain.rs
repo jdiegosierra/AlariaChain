@@ -46,44 +46,43 @@ struct Key {
 
 // OBJECTS
 impl Block {
-    // fn new(index: u32, timestamp: u128, data: Vec<transactions::Transaction>, prev: Vec<u8>) -> Self {
-
-    //     Block {
-    //         index,
-    //         timestamp,
-    //         transactions: data,
-    //         prev,
-    //         hash: utils::get_hash(tmp).to_vec(),
-    //     }
-    // }
+    fn new(index: u32, timestamp: u128, transactions: Vec<transaction::Transaction>, prev: Vec<u8>) -> Self {
+        let tmp = transactions;
+        Block {
+            index,
+            timestamp,
+            transactions: Vec::new(),
+            prev,
+            hash: utils::get_merkle(tmp),
+        }
+    }
 }
 
 impl Blockchain {
-    // pub fn new(genesis_file: String, _config_file: String) -> Self {
-    //     let file_content: String = utils::read_file(&genesis_file);
-    //     Blockchain::add_block(&file_content);
-    //     Blockchain{}
-    // }
+    pub fn new(genesis_file: String, _config_file: String) -> Self {
+        let file_content: String = utils::read_file(&genesis_file);
+        Blockchain::add_block(&file_content);
+        Blockchain{}
+    }
 
-    // pub fn add_block(data: &String) {
-    //     let index = db::get_last_key();
-    //     let value = db::get_last_value();
-    //     let decoded: Block = bincode::deserialize(&value).unwrap();
-    //     println!("El anterior Bloque es {:#?}", decoded);
+    pub fn add_block(data: &String) {
+        let index = db::get_last_key(String::from("./db/blockchain"));
+        let value = db::get_last_value(String::from("./db/blockchain"));
+        let decoded: Block = bincode::deserialize(&value).unwrap();
 
-    //     let block = Block::new(
-    //         index+1,
-    //         utils::get_timestamp(),
-    //         data.clone(),
-    //         decoded.hash
-    //     );
+        // let block = Block::new(
+        //     index+1,
+        //     utils::get_timestamp(),
+        //     data.clone(),
+        //     decoded.hash
+        // );
 
     //     println!("El nuevo Bloque es {:?}", block);
 
     //     let encoded = bincode::serialize(&block).unwrap(); // No se puede hacer en una sola línea let encoded: &[u8] = bincode::serialize(&block).unwrap();
     //     let c: &[u8] = &encoded;
     //     db::store_data(index+1, c);
-    // }
+    }
 
     pub fn print_genesis(genesis_file: String) {
         let file_content: String = utils::read_file(&genesis_file);
@@ -97,7 +96,7 @@ impl Blockchain {
     }
 
     pub fn drop_chain() {
-        fs::remove_dir_all("./db").unwrap();
+        fs::remove_dir_all("./db").unwrap_or_default();
     }
 
     // pub fn find_uspent_transactions() {
@@ -112,13 +111,28 @@ impl Blockchain {
         };
         // let index = 0;
         let transaction = transaction::Transaction::new(to, data);
-        let encoded = bincode::serialize(&transaction).unwrap(); // No se puede hacer en una sola línea let encoded: &[u8] = bincode::serialize(&block).unwrap();
+        let encoded = bincode::serialize(&transaction).unwrap_or_default(); // No se puede hacer en una sola línea let encoded: &[u8] = bincode::serialize(&block).unwrap();
         let c: &[u8] = &encoded;
         db::store_data(path, index+1, c);
     }
 
     pub fn print_transactions() {
         let transactions = db::iterate_transactions(String::from("./db/transactions"));
-        println!("value: {:?}", transactions);        
+        println!("value: {:#?}", transactions);        
+    }
+
+    pub fn drop_transactions() {
+        fs::remove_dir_all("./db/transactions").unwrap_or_default();
+    }
+
+    pub fn mine_block() {
+        fs::remove_dir_all("./db/transactions").unwrap_or_default();
+    }
+
+    pub fn print_merkle() {
+        let transaction: transaction::Transaction = transaction::Transaction::new(String::from("diego"), String::from("que paza"));
+        let vec = vec![transaction];
+        let transactions: Vec<transaction::Transaction> = vec;
+        utils::print_merkle(transactions);
     }
 }

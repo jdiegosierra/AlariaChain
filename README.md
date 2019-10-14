@@ -9,7 +9,10 @@ cargo build
 3º Add a transaction to the buffer
 ./target/debug/alariachain addtransaction --to diego --data hola
 
-4º Print transactions un buffer
+4º Print transactions buffer
+./target/debug/alariachain printtransactions
+
+5º Remove transactions buffer
 ./target/debug/alariachain printtransactions
 
 <!-- 3º Init the Blockchain

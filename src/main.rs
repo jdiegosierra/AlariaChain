@@ -49,7 +49,6 @@ fn main() {
                     .long("to")
                     .help("ID of the destinatary")
                     .takes_value(true)
-                    .required(true)
         )
                 .arg(Arg::with_name("data")
                     .long("data")
@@ -65,12 +64,20 @@ fn main() {
             App::new("mineblock")
                 .about("Mine all transactions")
         )
+        .subcommand(
+            App::new("droptransactions")
+                .about("Remove transactions buffer")
+        )
+        .subcommand(
+            App::new("printmerkle")
+                .about("Remove transactions buffer")
+        )
         .get_matches();
 
-    // if let Some(_matches) = matches.subcommand_matches("init") {
-    //     lib::blockchain::Blockchain::new(String::from("./config/genesis.json"), String::from("./config/genesis.json"));
-    // }
-    if let Some(matches) = matches.subcommand_matches("addblock") {
+    if let Some(_matches) = matches.subcommand_matches("init") {
+        blockchain::Blockchain::new(String::from("./config/genesis.json"), String::from("./config/genesis.json"));
+    }
+    if let Some(_matches) = matches.subcommand_matches("addblock") {
         println!("DEPRECATED: Use mineblock command");
         // if matches.is_present("data") {
         //    lib::blockchain::Blockchain::add_block(&String::from(matches.value_of("data").unwrap()));
@@ -89,11 +96,18 @@ fn main() {
     //     lib::blockchain::Blockchain::utils::generate_keypair();
     // }
     if let Some(input) = matches.subcommand_matches("addtransaction") {
-        blockchain::Blockchain::add_transaction(String::from(input.value_of("to").unwrap()), String::from(input.value_of("data").unwrap_or("")));
+        blockchain::Blockchain::add_transaction(String::from(input.value_of("to").unwrap_or("")), String::from(input.value_of("data").unwrap_or("")));
     }
-    if let Some(input) = matches.subcommand_matches("printtransactions") {
+    if let Some(_input) = matches.subcommand_matches("printtransactions") {
         blockchain::Blockchain::print_transactions();
     }
+    if let Some(_input) = matches.subcommand_matches("droptransactions") {
+        blockchain::Blockchain::drop_transactions();
+    }
     if let Some(_matches) = matches.subcommand_matches("mineblock") {
+        blockchain::Blockchain::mine_block();
+    }
+    if let Some(_matches) = matches.subcommand_matches("printmerkle") {
+        blockchain::Blockchain::print_merkle();
     }
 }

@@ -112,18 +112,13 @@ pub fn get_last_key(path: String) -> Option<u32> {
 pub fn get_last_value(path: String) -> Vec<u8> {
     let mut options = Options::new();
     options.create_if_missing = true;
-    println!("2,1100");
     let path = Path::new(&path);
-    println!("2,111");
     let database = match Database::open(&path, options) {
         Ok(db) => db,
         Err(e) => panic!("failed to open database: {:?}", e),
     };
-    println!("2,112");
     let read_opts = ReadOptions::new();
-    println!("2,113");
     let res = database.get(read_opts, 1);
-    println!("2,114");
     match res {
         Ok(_data) => {
             let (_key, value) = database.iter(ReadOptions::new()).last().unwrap();
